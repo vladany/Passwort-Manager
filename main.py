@@ -2,11 +2,12 @@ import db
 import secrets
 import os
 import time
-import pyperclip
 from threading import Thread
 from getpass import getpass
 from time import sleep
 
+START = """
+*** Gib das Masterpasswort ein: """
 # start des Programms nach Optionen abfragen
 
 gross = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -15,6 +16,7 @@ sonderzeichen = "!""#""$%&'()*+,-./:;<=>?@{|}~"
 zahlen = "1234567890"
 
 MENU_PROMPT = """
+***************************************************************
 ----------PASSWORTMANAGER---------- \n\
 Bitte wähle eine Option: \n\
     1. Füge ein neuen Eintrag hinzu \n\
@@ -26,20 +28,51 @@ Bitte wähle eine Option: \n\
     7. Lösche alle Einträge\n\
     8. Suche nach einem Eintrag, um das Passwort zu kopieren
     9. Beenden
-Deine Eingabe: """
+Deine Eingabe: 
+
+***************************************************************
+"""
 
 # Eintrag erfolgreich abgespeichert, frage nach nächster Aktion
-MENU_1 = "****Eintrag erfolgreich abgespeichert!****\n\
+MENU_1 = "**** Eintrag erfolgreich abgespeichert! ****\n\
 Bitte wähle eine Option: \n\
     1. Noch ein weiteren Eintrag abspeichern. \n\
-    2. Zurück zum Hauptmenü. "
+    Eingabetaste zurück zum Hauptmenü. "
+MENU_1_genpw = """
+    1. Passwort wird automatisch generiert.
+    Eingabetaste, um eigenes Passwort einzutippen."""
 
 # Eintrag löschen und frage nach nächster Action
-MENU_3_ASK = "Wenn du den Eintrag unwiderruflich löschen möchtest, drücke die 1. \n\
-Möchtest du zum Hauptmenü oder deine Eingabe verbessern bestätige mit Eingabetaste."
-MENU_3_SUCESS = "Eintrag wurde erfolgreich gelöscht! noch einen löschen 3. oder weiter dann eingabe?"
-MENU_3_AGAIN = "Noch mal Titel zum löschen eingeben 3. Andernfalls Eingabetaste zum Hauptmenü."
-FEHLER = "Upss! Da passt wohl etwas nicht überein. Kehre zum Hauptmenü zurück."
+MENU_3_ASK = """
+    1. den Eintrag unwiderruflich löschen.
+    Eingabetaste um deine Eingabe zu verbessern oder zurück zum Hauptmenü. """
+MENU_3_SUCESS = """
+**** Eintrag wurde erfolgreich gelöscht! ****
+    3. Um noch einen Eintrag zu löschen. 
+    Eingabetaste zurück zum Hauptmenü."""
+MENU_3_AGAIN = """
+    3. Titel zum löschen eingeben.
+    Eingabetaste zurück zum Hauptmenü.
+    
+"""
+MENU_2 = """
+*** Einträge nach Titel und Benutzername sortiert. ***"""
+MENU_5 = """
+*** Einträge, dessen Passwörter mehrfach vorkommen. ***
+
+"""
+MENU_6 = """
+*** Einträge, dessen Passwörter kürzer als 6 Zeichen sind. ***
+
+"""
+MENU_7 = """
+    1. Alle Einträge unwiderruflich löschen.
+    Eingabetaste züruck zum Hauptmenü. 
+"""
+MENU_8 = """
+    1. Zurück zum Hauptmenü.
+"""
+FEHLER = "Upss! Da passt wohl etwas nicht überein. Eingabetaste zurück zum Hauptmenü."
 
 def menu():
 
@@ -50,8 +83,7 @@ def menu():
         while user_input == "1":
             titel = input("Gebe den Titel ein: ")
             benutzername = input("Gebe den Benutzernamen ein: ")
-            genpw = input("Möchtest du, dass dein Passwort automatisch generiert wird dann drücke die 1."
-                  "\nWenn du das Passwort selbst eingeben möchtest, dann drücke beliebige Taste.")
+            genpw = input(MENU_1_genpw)
             if genpw == "1":
                 pw = ""
                 # Den Nutzer die verschieden Funktionen zur verfügung stellen!
@@ -145,15 +177,16 @@ def menu():
 
         while user_input == "3":
             titel = input("Gebe den Titel ein, den du löschen möchtest: ")
+            benutzername = input("Gebe den Benutzernamen ein, den du löschen möchtest: ")
             user_bestatigung = input(MENU_3_ASK) # bei 1. löschen bestätigen bei beliebige taste weiter
             if user_bestatigung == "1":
-                db.delete(connection, titel)
+                db.delete(connection, titel, benutzername)
                 user_input = input(MENU_3_SUCESS) #nochmal löschen 3. oder weiter
             else:
                 user_input = input(MENU_3_AGAIN) #nochmal titel zum löschen eigeben oder weiter
 
         if user_input == "2":
-            print("Einträge nach Titel, Benutzername und Passwort sortiert.")
+            print(MENU_2) # ausgabe alle einträge mit titel und dem benutzernamen
             passworter = db.get_all_pw(connection)
             for k in passworter:
                 print(k)
@@ -163,53 +196,56 @@ def menu():
             with open("mpw.txt", "r") as f:
                 for row in f:
                     if row.split(","):
-                        frag = input("Um das Masterpasswort zu ändern, gib bitte das alte Masterpasswort nochmal ein: ")
+                        frag = getpass("Um das Masterpasswort zu ändern, gib bitte das alte Masterpasswort nochmal ein: ")
                         if frag == row:
                             file2 = open('mpw.txt', 'w')
-                            passwort = input("Gib dein neues Masterpasswort ein:")
+                            passwort = getpass("Gib dein neues Masterpasswort ein:")
                             file2.write(passwort)
                             file2.close()
-                            print("Passwort erfolgreich geändert!")
+                            print("*** Passwort erfolgreich geändert! ***")
+                            break
                         else:
                             while frag != row and i != 0:
                                 print("Flasches Passwort! Noch ", i, "Versuche übrig.")
-                                frag = input("Gib das Masterpasswort ein: ")
+                                frag = getpass("Gib das Masterpasswort ein: ")
                                 i = i - 1
-                        if frag == row:
-                            file2 = open('mpw.txt', 'w')
-                            passwort = input("Gib dein neues Masterpasswort ein:")
-                            file2.write(passwort)
-                            file2.close()
-                            print("Passwort erfolgreich geändert!")
-                        else:
-                            print("Du hast es zu oft falsch eingegeben. Der Passwort-Manager wird beendet.")
-                            sec = 5
-                            while sec != 0:
-                                sec = sec - 1
-                                time.sleep(1)
-                                print(sec)
-                            exit()
+                            if frag == row:
+                                file2 = open('mpw.txt', 'w')
+                                passwort = getpass("Gib dein neues Masterpasswort ein:")
+                                file2.write(passwort)
+                                file2.close()
+                                print("*** Passwort erfolgreich geändert! ***")
+                            else:
+                                print("Du hast es zu oft falsch eingegeben. Der Passwort-Manager wird beendet in ...")
+                                sec = 3
+                                while sec != 0:
+                                    sec = sec - 1
+                                    time.sleep(1)
+                                    print(sec)
+                                exit()
         elif user_input == "5":
             alle_doppelte = db.pruefe_doppelte(connection)
+            print(MENU_5)
             print(alle_doppelte)
         elif user_input == "6":
             min_len = db.min_leange(connection)
+            print(MENU_6)
             print(min_len)
         elif user_input == "7":
-            frag_nochmal = input("Möchtest du sicher die ganzen Einträge löschen? Dann drücke 1. anderfalls beliebige Taste.")
+            frag_nochmal = input(MENU_7)
             if frag_nochmal == "1":
                 db.loesch_db(connection)
         elif user_input =="8":
-            titel = input("Welchen Titel möchtest du aufrufen? ")
-            benutzername = input("Welches Benutzerkonto möchtest du aufrufen? ")
+            titel = input("Welchen Titel möchtest du aufrufen: ")
+            benutzername = input("Welches Benutzerkonto möchtest du aufrufen: ")
             konto = db.get_benutzerkonto(connection, titel, benutzername)[0]
-            pyperclip.copy(konto)
+            # pyperclip.copy(konto)
             sec = 30
-            frage_timer = input("Möchtest du zum Hauptmenü? Dann Drücke die 1. ")
+            frage_timer = input(MENU_8)
             while sec != 0 and frage_timer != "1":
                 sec = sec - 1
                 time.sleep(1)
-            pyperclip.copy("")
+                # pyperclip.copy("")
 
     print("Das Programm wird beendet in...")
     sec = 4
@@ -223,21 +259,22 @@ def mpw():
     leer = os.path.getsize("mpw.txt")
     if leer == 0:
         file = open("mpw.txt", "a")
-        passwort = input("Gib dein neues Masterpasswort ein:")
+        passwort = getpass(START)
         file.write(passwort)
         file.close()
+        menu()
     else:
         i=3
         with open("mpw.txt", "r") as f:
             for row in f:
                 if row.split(","):
-                    frag = input("Was ist mpw: ")
+                    frag = getpass(START)
                     if frag == row:
                         menu()
                     else:
                         while frag != row and i != 0:
                             print("Flasches Passwort! Noch ", i, "Versuche übrig.")
-                            frag = input("Was ist mpw: ")
+                            frag = getpass(START)
                             i = i-1
                     if frag == row:
                         menu()
@@ -250,12 +287,11 @@ def mpw():
                             print(sec)
                         exit()
 def timer():
-    k=0
-    for i in range(5):
+    for i in range(10800):
         sleep(1)
     exit()
 
-# t1 = Thread(target=timer)
+t1 = Thread(target=timer)
 t2 = Thread(target=mpw)
-# t1.start()
+t1.start()
 t2.start()
