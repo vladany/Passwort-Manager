@@ -2,13 +2,17 @@ import sqlite3
 
 CREATE_TABLE_PWS = "CREATE TABLE IF NOT EXISTS pws (titel TEXT, benutzername TEXT PRIMARY KEY, pw TEXT);"
 INSERT_PW = "INSERT INTO pws (titel, benutzername, pw) VALUES (?, ?, ?);"
-GET_ALL_PW = "SELECT * FROM pws;"
-DELETE_PW = "DELETE FROM pws WHERE titel = ?;"
+GET_ALL_PW = """
+SELECT titel, benutzername
+FROM pws;"""
+DELETE_PW = """
+DELETE FROM pws 
+WHERE titel = ? AND benutzername =?;"""
 GET_BENUTZERKONTO = """
 SELECT pw FROM pws 
 WHERE titel = ? AND benutzername =?;"""
 PRUEFE_DOPPELTE_PW = """
-SELECT pw
+SELECT *
 FROM pws
 GROUP BY pw
 HAVING COUNT (*) >1 ;"""
@@ -45,9 +49,9 @@ def pruefe_doppelte(connection):
     with connection:
         return connection.execute(PRUEFE_DOPPELTE_PW).fetchall()
 
-def delete(connection, titel):
+def delete(connection, titel, benutzername):
     with connection:
-        return connection.execute(DELETE_PW, (titel,)).fetchall()
+        return connection.execute(DELETE_PW, (titel, benutzername,)).fetchall()
 
 def get_benutzerkonto(connection, titel, benutzername):
     with connection:
