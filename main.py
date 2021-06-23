@@ -1,8 +1,8 @@
+import threading
 import db
 import secrets
 import os
-import time
-from threading import Thread
+# import pyperclip
 from getpass import getpass
 from time import sleep
 
@@ -175,6 +175,12 @@ def menu():
                 db.add_pw(connection, titel, benutzername, pw)
                 user_input = input(MENU_1)
 
+        if user_input == "2":
+            print(MENU_2) # ausgabe alle einträge mit titel und dem benutzernamen
+            passworter = db.get_all_pw(connection)
+            for k in passworter:
+                print(k)
+
         while user_input == "3":
             titel = input("Gebe den Titel ein, den du löschen möchtest: ")
             benutzername = input("Gebe den Benutzernamen ein, den du löschen möchtest: ")
@@ -185,13 +191,7 @@ def menu():
             else:
                 user_input = input(MENU_3_AGAIN) #nochmal titel zum löschen eigeben oder weiter
 
-        if user_input == "2":
-            print(MENU_2) # ausgabe alle einträge mit titel und dem benutzernamen
-            passworter = db.get_all_pw(connection)
-            for k in passworter:
-                print(k)
-
-        elif user_input =="4":
+        if user_input =="4":
             i = 3
             with open("mpw.txt", "r") as f:
                 for row in f:
@@ -227,22 +227,26 @@ def menu():
             alle_doppelte = db.pruefe_doppelte(connection)
             print(MENU_5)
             print(alle_doppelte)
+
         elif user_input == "6":
             min_len = db.min_leange(connection)
             print(MENU_6)
             print(min_len)
+
         elif user_input == "7":
             frag_nochmal = input(MENU_7)
             if frag_nochmal == "1":
                 db.loesch_db(connection)
+
         elif user_input =="8":
             titel = input("Welchen Titel möchtest du aufrufen: ")
             benutzername = input("Welches Benutzerkonto möchtest du aufrufen: ")
             konto = db.get_benutzerkonto(connection, titel, benutzername)[0]
             # pyperclip.copy(konto)
             sec = 30
-            frage_timer = input(MENU_8)
-            while sec != 0 and frage_timer != "1":
+            frage_timer = ""
+            while frage_timer != "1" and sec != 0:
+                frage_timer = input(MENU_8)
                 sec = sec - 1
                 time.sleep(1)
                 # pyperclip.copy("")
@@ -286,12 +290,19 @@ def mpw():
                             time.sleep(1)
                             print(sec)
                         exit()
-def timer():
-    for i in range(10800):
-        sleep(1)
-    exit()
 
-t1 = Thread(target=timer)
-t2 = Thread(target=mpw)
-t1.start()
-t2.start()
+def timer():
+    global time
+    time = 50000
+
+    for i in range(50000):
+        time = time - 1
+        sleep(1)
+    print("*** Schließe den Passwort-Manager! ***")
+    quit(mpw())
+
+timer_thread = threading.Thread(target=timer)
+timer_thread.start()
+mpw()
+
+
