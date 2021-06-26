@@ -2,6 +2,7 @@ import threading
 import db
 import secrets
 import os
+import time
 # import pyperclip
 from getpass import getpass
 from time import sleep
@@ -9,6 +10,8 @@ from time import sleep
 START = """
 *** Gib das Masterpasswort ein: """
 # start des Programms nach Optionen abfragen
+START_neu_mpw = """
+*** Gib ein neues Masterpasswort ein: """
 
 gross = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 klein = "abcdefghijklmnopqrstuvwxyz"
@@ -69,6 +72,8 @@ MENU_7 = """
     1. Alle Einträge unwiderruflich löschen.
     Eingabetaste züruck zum Hauptmenü. 
 """
+MENU_7_SUCCESS = """
+*** Alle Einträge erfolgreich gelöscht! ***"""
 MENU_8 = """
     1. Zurück zum Hauptmenü.
 """
@@ -87,21 +92,22 @@ def menu():
             if genpw == "1":
                 pw = ""
                 # Den Nutzer die verschieden Funktionen zur verfügung stellen!
-                laenge = int(input("Bitte gebe die Passwortlänge ein!: "))
+                laenge = int(input("Bitte gib die Passwortlänge ein: "))
                 frage = input(
-                    "Möchtest du Großbuchstaben,Kleinbuchstaben,Zahlen und Sonderzeichen ,dann drücke die 1.,"
-                    "\nwenn du Kleinbuchstaben, Zahlen und Sonderzeichen willst, dann drücke die 2.,"
-                    "\nwenn du Zahlen und Sonderzeichen willst, dann drücke die 3.,"
-                    "\nwenn du nur Sonderzeichen willst, dann drücke die 4.,"
-                    "\nwenn du nur Großbuchstaben willst, dann drücke die 5.,"
-                    "\nwenn du nur Kleinbuchstaben willst, dann drücke die 6. ,"
-                    "\nwenn du nur Zahlen willst, dann drücke die 7. ,"
-                    "\nwenn du Sonderzeichen und Großbuchstaben willst, dann drücke die 8.!"
-                    "\nwenn du Sonderzeichen und Kleinbuchstaben willst, dann drücke die 9.!"
-                    "\nwenn du Sonderzeichen und Zahlen willst, dann drücke die 10.!"
-                    "\nwenn du nur Großbuchstaben und Kleinbuchstaben willst, dann drücke die 11.,"
-                    "\nwenn du nur Großbuchstaben und Zahlen willst, dann drücke die 12.,"
-                    "\nwenn du nur Kleinbuchstaben und Zahlen willst, dann drücke die 13. ,"
+                    "1. Großbuchstaben,Kleinbuchstaben,Zahlen und Sonderzeichen"
+                    "\n2. Kleinbuchstaben, Zahlen und Sonderzeichen willst"
+                    "\n3. Zahlen und Sonderzeichen"
+                    "\n4. nur Sonderzeichen"
+                    "\n5. nur Großbuchstaben"
+                    "\n6. nur Kleinbuchstaben"
+                    "\n7. nur Zahlen"
+                    "\n8. Sonderzeichen und Großbuchstaben"
+                    "\n9. Sonderzeichen und Kleinbuchstaben"
+                    "\n10. Sonderzeichen und Zahlen"
+                    "\n11. Großbuchstaben und Kleinbuchstaben"
+                    "\n12. Großbuchstaben und Zahlen"
+                    "\n13. Kleinbuchstaben und Zahlen"
+                    "\n"
                 )
                 if frage == "1":
                     for _ in range(laenge):
@@ -220,7 +226,7 @@ def menu():
                                 sec = 3
                                 while sec != 0:
                                     sec = sec - 1
-                                    time.sleep(1)
+                                    sleep(1)
                                     print(sec)
                                 exit()
         elif user_input == "5":
@@ -237,25 +243,27 @@ def menu():
             frag_nochmal = input(MENU_7)
             if frag_nochmal == "1":
                 db.loesch_db(connection)
+                print(MENU_7_SUCCESS)
 
         elif user_input =="8":
             titel = input("Welchen Titel möchtest du aufrufen: ")
             benutzername = input("Welches Benutzerkonto möchtest du aufrufen: ")
             konto = db.get_benutzerkonto(connection, titel, benutzername)[0]
-            # pyperclip.copy(konto)
-            sec = 30
+            print(konto)
             frage_timer = ""
+            sec = 30
             while frage_timer != "1" and sec != 0:
+                sec = 5
                 frage_timer = input(MENU_8)
                 sec = sec - 1
-                time.sleep(1)
+                sleep(1)
                 # pyperclip.copy("")
 
     print("Das Programm wird beendet in...")
     sec = 4
     while sec != 0:
         sec = sec - 1
-        time.sleep(1)
+        sleep(1)
         print(sec)
     exit()
 
@@ -263,7 +271,7 @@ def mpw():
     leer = os.path.getsize("mpw.txt")
     if leer == 0:
         file = open("mpw.txt", "a")
-        passwort = getpass(START)
+        passwort = getpass(START_neu_mpw)
         file.write(passwort)
         file.close()
         menu()
@@ -287,7 +295,7 @@ def mpw():
                         sec = 5
                         while sec != 0:
                             sec = sec - 1
-                            time.sleep(1)
+                            sleep(1)
                             print(sec)
                         exit()
 
@@ -304,5 +312,5 @@ def timer():
 timer_thread = threading.Thread(target=timer)
 timer_thread.start()
 mpw()
-
+# pyperclip.copy(konto)
 
