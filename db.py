@@ -51,7 +51,7 @@ def pruefe_doppelte(connection):
 
 def delete(connection, titel, benutzername):
     with connection:
-        return connection.execute(DELETE_PW, (titel, benutzername,)).fetchall()
+        return connection.execute(DELETE_PW, (titel, benutzername,)).fetchone()
 
 def get_benutzerkonto(connection, titel, benutzername):
     with connection:

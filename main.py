@@ -2,7 +2,6 @@ import threading
 import db
 import secrets
 import os
-import time
 # import pyperclip
 from getpass import getpass
 from time import sleep
@@ -249,7 +248,7 @@ def menu():
             titel = input("Welchen Titel möchtest du aufrufen: ")
             benutzername = input("Welches Benutzerkonto möchtest du aufrufen: ")
             konto = db.get_benutzerkonto(connection, titel, benutzername)[0]
-            print(konto)
+            # pyperclip.copy(konto)
             frage_timer = ""
             sec = 30
             while frage_timer != "1" and sec != 0:
@@ -301,9 +300,9 @@ def mpw():
 
 def timer():
     global time
-    time = 50000
+    time = 7200
 
-    for i in range(50000):
+    for i in range(7200):
         time = time - 1
         sleep(1)
     print("*** Schließe den Passwort-Manager! ***")
@@ -312,5 +311,4 @@ def timer():
 timer_thread = threading.Thread(target=timer)
 timer_thread.start()
 mpw()
-# pyperclip.copy(konto)
 
